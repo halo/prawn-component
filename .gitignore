@@ -1,0 +1,6 @@
+# System files
+.DS_Store
+
+# Caches
+.bundle
+/.rubocop-https*
