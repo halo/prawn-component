@@ -1,5 +1,5 @@
 module Prawn
-  module Component
+  module Components
     # Adaptation of to https://github.com/github/view_component/blob/a4e7296a6158a8656a0cd7bc868e1533cd4ee7d8/lib/view_component/base.rb
     # But without action view and caching.
     #
@@ -24,7 +24,7 @@ module Prawn
     # SOFTWARE.
     #
     class Base
-      include Prawn::Component::MethodObject
+      include ::Prawn::Components::MethodObject
 
       class_attribute :registered_slots
       self.registered_slots = {}

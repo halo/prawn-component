@@ -1,4 +1,4 @@
-class ButtonComponent < Prawn::Component::Base
+class ButtonComponent < Prawn::Component
   renders_one :title
 
   def call

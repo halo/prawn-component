@@ -6,59 +6,148 @@ This is an implementation of the popular [view_component](https://viewcomponent.
 
 ## Usage
 
-Define a component. You might want to call it something else than "component", because it's likely that you're using the `view_component` gem, too.
+You define a component just like you would using the `view_component` gem. The only difference, of course, is that you
+don't have templates. We're in all-ruby land and the implementation resides in the `#call` method.
 
 ```ruby
-# app/widgets/box_widget.rb
-class BoxWidget < Prawn::Component::Base
-  renders_one :title
-  renders_one :description
-  renders_many :comments, CommentComponent
-
-  option :color, default: { 'ff0000' }
-
+# app/components/hello_world_component.rb
+class HelloWorldComponent < Prawn::Component
   def call
-    pdf.text 'I am a box', color: color
-    title&.draw
-
-    pdf.font_size 12
-    description&.draw
-
-    comments.each(&:draw)
-  end
-end
-
-# app/widgets/comment_widget.rb
-class CommentComponent < Prawn::Component::Base
-  option :record
-  renders_one :share
-
-  def call
-    pdf.text "Comment (#{record.date})"
-    pdf.text record.details
-
-    share&.draw
+    pdf.text 'Hello World!'
   end
 end
 ```
 
-And when generating the PDF, you can use the component:
+To render a component into an existing PDF, use the `#render_in` method:
 
 ```ruby
-BoxWidget.new(color: '00ff00').render_in(pdf) do |box|
+# app/models/generate_some_pdf.rb
+pdf = Prawn::Document.new
+
+HelloWorldComponent.new.render_in(pdf)
+```
+
+You can use `renders_one` and `renders_many` to use subcomponents.
+In fact, when using your component with a block, you must at least use `renders_one` to pass in your content.
+
+```ruby
+# app/components/box_component.rb
+class BoxComponent < Prawn::Component
+  renders_one :title, TitleComponent
+  renders_one :description
+  renders_many :comments
+
+  def call
+    pdf.text 'This is a box'
+    title.draw # In Rails you would simply use `#to_s` but we use `#draw`.
+    description.draw
+    comments.each(&:draw)
+  end
+end
+
+# app/components/title_component.rb
+class TitleComponent < Prawn::Component
+  renders_one :content
+
+  def call
+    pdf.font_size 14
+    content.draw
+  end
+end
+```
+
+And then render the component:
+
+```ruby
+# app/models/generate_some_pdf.rb
+pdf = Prawn::Document.new
+
+BoxComponent.new.render_in(pdf) do |box|
   box.title do
     pdf.text 'I am the title'
   end
 
   box.description do
-    pdf.svg 'unicorns.svg'
+    pdf.text 'I am the description'
   end
 
-  @comments.each do |comment|
-    box.comment(record: comment) do |comment|
-      comment.share do
-        pdf.text "Share this with #{@likes[comment.id]} others."
+  box.comment do
+    pdf.text 'First comment'
+  end
+
+  box.comment do
+    pdf.text 'Second comment'
+  end
+end
+```
+
+You can define params and options like with the [dry-initializer](https://dry-rb.org/gems/dry-initializer) gem.
+
+```ruby
+# app/components/title_component.rb
+class SayItComponent < Prawn::Component
+  option :message
+
+  def call
+    pdf.text message
+  end
+end
+```
+
+And call it like so:
+
+```ruby
+# app/models/generate_some_pdf.rb
+pdf = Prawn::Document.new
+
+SayItComponent.new(message: 'Hello!').render_in(pdf) do |box|
+```
+
+Of course you could render a component inside of another component:
+
+```ruby
+# app/components/blog_component.rb
+class BlogComponent < Prawn::Component
+  renders_many :articles, ArticleComponent
+
+  def call
+    pdf.push 'Welcome to my blog'
+    articles.each(&:draw)
+  end
+end
+
+# app/components/article_component.rb
+class ArticleComponent < Prawn::Component
+  renders_one :title
+  renders_one :body
+
+  def call
+    TitleComponent.new.render_in(pdf) do |title|
+      title.content do
+        title.draw
       end
+    end
+
+    body.draw
+  end
+end
+```
+
+And render it:
+
+```ruby
+# app/models/generate_some_pdf.rb
+pdf = Prawn::Document.new
+@comments = load_some_comments!
+
+BlogComponent.new.render_in(pdf) do |blog|
+  blog.article do |article|
+    article.title do
+      pdf.text 'Breaking news'
+    end
+
+    article.body do
+      pdf.text 'The weather is good.'
     end
   end
 end
@@ -69,7 +158,7 @@ end
 Rendering a Rails view is pretty simple compared to a PDF.
 Because you simply pre-generate an HTML String that you can wrap or concatenate.
 
-In Prawn, the "view" is a living PDF document and you cannot pre-generate any content. In fact, it is not even clear what is meant by content, would it be a `pdf.text` statement, or a `pdf.formatted_text` statement?
+In Prawn, the "view" is a living PDF document and you cannot pre-generate any content.
 
 That means, we cannot use wrappers like this:
 
@@ -112,6 +201,12 @@ So you have to use either or: blocks never have arguments or always (which we ch
 
 When it comes to "resusable components", it's really hard to find the balance between too much opinion and too much flexibility.
 
+For Prawn it might look like
+[this](https://github.com/kaspermeyer/canned_tuna/blob/ea4e05a4ff7b10cd73c3bb3246173a9f0f749b40/example/outlets.rb#L26-L28)
+or like
+[this](https://github.com/prawnpdf/prawn-component/blob/af0c1e6c9fcac7d036c024a53e18dfe563eb50e3/example/simple.rb#L3)
+or
+[this](https://github.com/neume/sugpoko/blob/1e81c069f6a6cb58431866b1090667d5b8d783ad/README.md#usage).
 For Rails you might come up with something like
 [this](https://github.com/github/view_component/blob/0afe05da0c3ea5ce99dc431447bcb61359bc6e09/docs/content_areas.md)
 but that's not good enough, so let's use

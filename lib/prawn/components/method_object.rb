@@ -1,5 +1,5 @@
 module Prawn
-  module Component
+  module Components
     # This is a copy-paste of the `method_object` gem with two modifications:
     #
     # A) At the time of writing this commit has not been released to rubygems.org yet:

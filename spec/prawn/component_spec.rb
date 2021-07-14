@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-RSpec.describe Prawn::Component::Base do
+RSpec.describe Prawn::Component do
   describe '#render_in' do
     context 'with a simple call statement' do
       it 'renders the content' do
@@ -27,6 +27,24 @@ RSpec.describe Prawn::Component::Base do
         end
 
         expect(pdf).to eq ['<<', 'TITLE', 'DESCRIPTION', '>>']
+      end
+    end
+
+    context 'with renders_many' do
+      it 'renders the subcomponents' do
+        pdf = []
+
+        StreetComponent.new.render_in(pdf) do |street|
+          street.car do
+            pdf.push 'Ford'
+          end
+
+          street.car do
+            pdf.push 'Mercedes'
+          end
+        end
+
+        expect(pdf).to eq ['Car:', 'Ford', 'Car:', 'Mercedes']
       end
     end
 

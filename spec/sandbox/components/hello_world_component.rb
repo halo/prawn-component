@@ -1,4 +1,4 @@
-class HelloWorldComponent < Prawn::Component::Base
+class HelloWorldComponent < Prawn::Component
   def call
     pdf.push 'Hello World!'
   end

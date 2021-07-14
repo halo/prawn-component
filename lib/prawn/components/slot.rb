@@ -1,5 +1,5 @@
 module Prawn
-  module Component
+  module Components
     # Adaptation of https://github.com/github/view_component/blob/a4e7296a6158a8656a0cd7bc868e1533cd4ee7d8/lib/view_component/slot_v2.rb
     # But without string capturing.
     #

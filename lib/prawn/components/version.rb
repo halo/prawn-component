@@ -1,5 +1,5 @@
 module Prawn
-  module Component
+  module Components
     module VERSION #:nodoc:
       MAJOR = 0
       MINOR = 0

@@ -1,4 +1,4 @@
-class ArticleComponent < Prawn::Component::Base
+class ArticleComponent < Prawn::Component
   renders_one :title, -> {}
   renders_one :body, -> {}
 

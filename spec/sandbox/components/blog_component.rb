@@ -1,4 +1,4 @@
-class BlogComponent < Prawn::Component::Base
+class BlogComponent < Prawn::Component
   renders_many :articles, ArticleComponent
 
   def call
