@@ -80,4 +80,18 @@ RSpec.describe Prawn::Component do
       end
     end
   end
+
+  describe '#call_in' do
+    context 'with an explicit block' do
+      it 'does not yield upfront' do
+        pdf = []
+
+        VerticalSpaceComponent.new.call_in(pdf) do
+          pdf.push 'In between'
+        end
+
+        expect(pdf).to eq ['Up here', 'In between', 'Down there']
+      end
+    end
+  end
 end

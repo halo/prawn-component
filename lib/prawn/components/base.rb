@@ -166,10 +166,10 @@ module Prawn
         end
       end
 
-      def render_in(pdf, &block)
+      def render_in(pdf)
         @pdf = pdf
 
-        # We have to yield eventually, because otherwise the components block would not be executed.
+        # We have to yield eventually, because otherwise the components' block would not be executed.
         # Also, we have to yield before trying to draw subcomponents (because they are set up by executing the block).
         # It's unintuitive to leave that up to the developer to figure out in all their components.
         # So, we keep things simple and always yield right away, so everything is set up properly.
@@ -177,6 +177,13 @@ module Prawn
         yield self if block_given?
 
         call if render?
+      end
+
+      # However, we also provide this custom method to have the component handle the `yield` itself.
+      def call_in(pdf, &block)
+        @pdf = pdf
+
+        call(&block) if render?
       end
 
       private

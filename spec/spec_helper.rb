@@ -6,6 +6,7 @@ require 'sandbox/components/article_component'
 require 'sandbox/components/blog_component'
 require 'sandbox/components/box_component'
 require 'sandbox/components/street_component'
+require 'sandbox/components/vertical_space_component'
 
 RSpec.configure do |config|
   config.disable_monkey_patching!
